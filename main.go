@@ -9,28 +9,37 @@ import (
 )
 
 func main() {
+	//Connecting to the server
 	Conn, err := net.Dial("tcp", "localhost:8081")
 	if err != nil {
 		panic(err)
 	}
-
+	//Welcoming the user
 	fmt.Println("WELCOME TO WE-TRANSFER-FILES")
+
+	//Setting the reader
 	reader := bufio.NewReader(os.Stdin)
+
+	//Asking for a username
 	fmt.Println("For registration, enter a username:")
+
+	//Creating the client
 	var newClient Client
 
+	//Reading the username until it gets OK message in the register method
 	for {
 		username, _ := reader.ReadString('\n')
 		username = strings.TrimSpace(username)
 
+		//Validating that the username is not empty
 		if len(username) == 0 {
 			fmt.Println("Enter a valid username")
 			continue
 		}
-
+		//Registering the user
 		msg := register(username, Conn)
 		msg = strings.TrimSpace(msg)
-
+		//If msg is OK then break the loop and show the menu
 		if msg == "OK" {
 			newClient = Client{
 				Con:      Conn,
@@ -42,16 +51,27 @@ func main() {
 	}
 
 	fmt.Println("Registration done.")
-	fmt.Println("Menu: \n 1. Listar canales \n 2. Subscribise a un canal \n 3. Enviar archivo a un canal")
-	option, _ := reader.ReadString('\n')
+	fmt.Println("Menu: \n 1. Listar canales \n 2. Subscribise a un canal \n 3. Enviar archivo a un canal \n 4. Salir")
 
-	switch option {
-	case "1":
-		fmt.Println("im 1")
-	case "2":
-		newClient.receiveFile()
-	case "3":
-		fmt.Println("im 3")
+menu:
+	for {
+		option, _ := reader.ReadString('\n')
+		option = strings.TrimSpace(option)
+
+		switch option {
+		case "1":
+			fmt.Println("im 1")
+		case "2":
+			newClient.receiveFile()
+		case "3":
+			fmt.Println("im 3")
+		case "4":
+			fmt.Println("Good bye")
+			newClient.Con.Close()
+			break menu
+		default:
+			fmt.Println("freak out")
+		}
 	}
 
 }
