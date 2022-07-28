@@ -60,7 +60,7 @@ menu:
 
 		switch option {
 		case "1":
-			fmt.Println("im 1")
+			newClient.listChannels()
 		case "2":
 			newClient.receiveFile()
 		case "3":

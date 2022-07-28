@@ -69,10 +69,6 @@ func register(name string, c net.Conn) string {
 	return string(msg)
 }
 
-func (c *Client) err(e error) {
-	c.Con.Write([]byte("ERR " + e.Error() + "\n"))
-}
-
 func (c *Client) read() error {
 	for {
 		msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
@@ -87,4 +83,25 @@ func (c *Client) read() error {
 
 		fmt.Println(string(msg))
 	}
+}
+
+func (c *Client) listChannels() {
+	command := "LCHANNELS \n"
+
+	c.sendCommand(command)
+}
+
+func (c *Client) sendCommand(cmd string) {
+	_, err := c.Con.Write([]byte(cmd))
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	//Reading the response of the server
+	msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	fmt.Println(string(msg))
 }
