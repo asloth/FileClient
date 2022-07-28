@@ -62,7 +62,12 @@ menu:
 		case "1":
 			newClient.listChannels()
 		case "2":
-			newClient.receiveFile()
+			// newClient.receiveFile()
+			fmt.Println("Enter the name of the channel you want to join:")
+			channelName, _ := reader.ReadString('\n')
+			channelName = strings.TrimSpace(channelName)
+
+			newClient.suscribing(channelName)
 		case "3":
 			fmt.Println("im 3")
 		case "4":

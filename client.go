@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"compress/gzip"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"os"
 	"strconv"
@@ -51,6 +53,7 @@ func (c *Client) receiveFile() {
 
 }
 
+//Function for registering the user in the server
 func register(name string, c net.Conn) string {
 
 	command := "REGISTER @" + name + "\n"
@@ -85,12 +88,7 @@ func (c *Client) read() error {
 	}
 }
 
-func (c *Client) listChannels() {
-	command := "LCHANNELS \n"
-
-	c.sendCommand(command)
-}
-
+//Function for sending commands to the server and visualizing the response
 func (c *Client) sendCommand(cmd string) {
 	_, err := c.Con.Write([]byte(cmd))
 	if err != nil {
@@ -104,4 +102,46 @@ func (c *Client) sendCommand(cmd string) {
 	}
 
 	fmt.Println(string(msg))
+}
+
+//Fuction for listing the channels
+func (c *Client) listChannels() {
+	command := "LCHANNELS \n"
+
+	c.sendCommand(command)
+}
+
+func (c *Client) suscribing(chann string) {
+	command := "SUSCRIBE #" + chann + " \n"
+	c.sendCommand(command)
+
+	go c.receiveFile()
+}
+
+func (c *Client) sendFile(path string) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pr, pw := io.Pipe()
+	w, err := gzip.NewWriterLevel(pw, 7)
+	if err != nil {
+		log.Fatal(err)
+	}
+	go func() {
+		n, err := io.Copy(w, file)
+		if err != nil {
+			log.Fatal(err)
+		}
+		w.Close()
+		pw.Close()
+		log.Printf("copied to piped writer via the compressed writer: %d", n)
+	}()
+
+	n, err := io.Copy(c.Con, pr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("copied to connection: %d", n)
 }
