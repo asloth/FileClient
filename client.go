@@ -72,22 +72,6 @@ func register(name string, c net.Conn) string {
 	return string(msg)
 }
 
-func (c *Client) read() error {
-	for {
-		msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
-		if err == io.EOF {
-			// Connection closed, deregister client
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(string(msg))
-	}
-}
-
 //Function for sending commands to the server and visualizing the response
 func (c *Client) sendCommand(cmd string) {
 	_, err := c.Con.Write([]byte(cmd))
