@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"net"
@@ -12,7 +13,6 @@ import (
 type Client struct {
 	Con      net.Conn
 	username string
-	macaddr  []string
 }
 
 func (c *Client) receiveFile() {
@@ -51,6 +51,40 @@ func (c *Client) receiveFile() {
 
 }
 
-func sendCommand() {
+func register(name string, c net.Conn) string {
 
+	command := "REGISTER @" + name + "\n"
+
+	_, err := c.Write([]byte(command))
+	if err != nil {
+		return err.Error()
+	}
+	//Reading the response of the server
+	msg, err := bufio.NewReader(c).ReadBytes('\n')
+
+	if err != nil {
+		return err.Error()
+	}
+
+	return string(msg)
+}
+
+func (c *Client) err(e error) {
+	c.Con.Write([]byte("ERR " + e.Error() + "\n"))
+}
+
+func (c *Client) read() error {
+	for {
+		msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
+		if err == io.EOF {
+			// Connection closed, deregister client
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(string(msg))
+	}
 }

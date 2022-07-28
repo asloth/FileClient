@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -16,23 +17,31 @@ func main() {
 	fmt.Println("WELCOME TO WE-TRANSFER-FILES")
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("For registration, enter a username:")
-	username, _ := reader.ReadString('\n')
+	var newClient Client
 
-	if len(username) == 0 {
-		fmt.Errorf("Enter a valid username")
-	}
-	macadd, err := getMacAddr()
-	if err != nil {
-		fmt.Errorf("Something went wrong")
+	for {
+		username, _ := reader.ReadString('\n')
+		username = strings.TrimSpace(username)
+
+		if len(username) == 0 {
+			fmt.Println("Enter a valid username")
+			continue
+		}
+
+		msg := register(username, Conn)
+		msg = strings.TrimSpace(msg)
+
+		if msg == "OK" {
+			newClient = Client{
+				Con:      Conn,
+				username: username,
+			}
+
+			break
+		}
 	}
 
-	newClient := Client{
-		Con:      Conn,
-		username: username,
-		macaddr:  macadd,
-	}
-
-	fmt.Println("Registration done. \n")
+	fmt.Println("Registration done.")
 	fmt.Println("Menu: \n 1. Listar canales \n 2. Subscribise a un canal \n 3. Enviar archivo a un canal")
 	option, _ := reader.ReadString('\n')
 
