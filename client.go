@@ -93,6 +93,7 @@ func (c *Client) listChannels() {
 	c.sendCommand(command)
 }
 
+//Function for suscribing to a channel
 func (c *Client) suscribing(chann string) {
 	command := "SUSCRIBE #" + chann + " \n"
 	c.sendCommand(command)
@@ -100,9 +101,40 @@ func (c *Client) suscribing(chann string) {
 	go c.receiveFile()
 }
 
+// function for sending a file to a channel
+func (c *Client) sendFile(chnn, path string) {
+	//checking if the file exists
+	_, error := os.Stat(path)
+
+	// check if error is "file not exists"
+	if os.IsNotExist(error) {
+		fmt.Printf("%v file does not exist\n", path)
+		return
+	}
+
+	command := "SEND #" + chnn + "\n"
+
+	_, err := c.Con.Write([]byte(command))
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	//Reading the response of the server
+	msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if strings.TrimSpace(string(msg)) == "OK" {
+		go c.sendingFile(path)
+	}
+
+}
+
 const BUFFERSIZE = 1024
 
-func (c *Client) sendFile(path string) {
+//Function for sending only the file data, this is gonna execute at the end of sendFile  method
+func (c *Client) sendingFile(path string) {
 	connection := c.Con
 	file, err := os.Open(path)
 	if err != nil {
@@ -129,7 +161,6 @@ func (c *Client) sendFile(path string) {
 		connection.Write(sendBuffer)
 	}
 	fmt.Println("File has been sent")
-
 }
 
 func fillString(retunString string, toLength int) string {

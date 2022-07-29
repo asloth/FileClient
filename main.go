@@ -68,7 +68,14 @@ menu:
 
 			newClient.suscribing(channelName)
 		case "3":
-			fmt.Println("im 3")
+			fmt.Println("Enter the name of the channel you want sent the file to:")
+			channelName, _ := reader.ReadString('\n')
+			channelName = strings.TrimSpace(channelName)
+			fmt.Println("Enter the path to the file you want to send:")
+			filePath, _ := reader.ReadString('\n')
+			filePath = strings.TrimSpace(filePath)
+
+			newClient.sendFile(channelName, filePath)
 		case "4":
 			fmt.Println("Good bye")
 			newClient.Con.Close()
