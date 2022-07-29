@@ -26,7 +26,7 @@ func main() {
 	//Creating the client
 	var newClient Client
 
-	//Reading the username until it gets OK message in the register method
+	//Reading the username until it gets the OK message in the register method
 	for {
 		username, _ := reader.ReadString('\n')
 		username = strings.TrimSpace(username)
@@ -62,7 +62,6 @@ menu:
 		case "1":
 			newClient.listChannels()
 		case "2":
-			// newClient.receiveFile()
 			fmt.Println("Enter the name of the channel you want to join:")
 			channelName, _ := reader.ReadString('\n')
 			channelName = strings.TrimSpace(channelName)
@@ -75,7 +74,7 @@ menu:
 			newClient.Con.Close()
 			break menu
 		default:
-			fmt.Println("freak out")
+			fmt.Println("Enter a number from 1 to 4 please")
 		}
 	}
 
