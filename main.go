@@ -52,6 +52,7 @@ func main() {
 
 	fmt.Println("Registration done.")
 	fmt.Println("Menu: \n 1. Listar canales \n 2. Subscribise a un canal \n 3. Enviar archivo a un canal \n 4. Salir")
+	go newClient.Read()
 
 menu:
 	for {

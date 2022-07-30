@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"net"
@@ -13,6 +14,36 @@ import (
 type Client struct {
 	Con      net.Conn
 	username string
+}
+
+func (c *Client) Read() error {
+	for {
+		msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
+
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		c.Handle(msg)
+	}
+}
+
+func (c *Client) Handle(message []byte) {
+	//Taking the command from the received message
+	cmd := bytes.ToUpper(bytes.TrimSpace(bytes.Split(message, []byte(" "))[0]))
+
+	switch string(cmd) {
+	case "RECEIVING":
+		c.receiveFile()
+	case "SENDING":
+		c.sendingFile("notes.txt")
+	default:
+		fmt.Println(string(cmd))
+	}
 }
 
 func (c *Client) receiveFile() {
@@ -77,13 +108,14 @@ func (c *Client) sendCommand(cmd string) {
 		fmt.Println(err.Error())
 	}
 	//Reading the response of the server
-	msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
+	// msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
 
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// }
 
-	fmt.Println(string(msg))
+	// fmt.Println(string(msg))
+	// return string(msg)
 }
 
 //Fuction for listing the channels
@@ -98,7 +130,6 @@ func (c *Client) suscribing(chann string) {
 	command := "SUSCRIBE #" + chann + " \n"
 	c.sendCommand(command)
 
-	go c.receiveFile()
 }
 
 // function for sending a file to a channel
@@ -108,33 +139,20 @@ func (c *Client) sendFile(chnn, path string) {
 
 	// check if error is "file not exists"
 	if os.IsNotExist(error) {
-		fmt.Printf("%v file does not exist\n", path)
+		fmt.Printf("%v file does not exist. Returning to the menu\n", path)
 		return
 	}
 
-	command := "SEND #" + chnn + "\n"
+	command := "SEND #" + chnn + " \n"
 
-	_, err := c.Con.Write([]byte(command))
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	//Reading the response of the server
-	msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
-
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	if strings.TrimSpace(string(msg)) == "OK" {
-		go c.sendingFile(path)
-	}
+	c.sendCommand(command)
 
 }
 
-const BUFFERSIZE = 1024
-
 //Function for sending only the file data, this is gonna execute at the end of sendFile  method
 func (c *Client) sendingFile(path string) {
+	const BUFFERSIZE = 1024
+
 	connection := c.Con
 	file, err := os.Open(path)
 	if err != nil {
