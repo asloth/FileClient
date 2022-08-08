@@ -18,7 +18,8 @@ type Client struct {
 
 func (c *Client) Read() error {
 	for {
-		msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
+		msg := make([]byte, 50)
+		_, err := c.Con.Read(msg)
 
 		if err == io.EOF {
 			return nil
@@ -34,13 +35,15 @@ func (c *Client) Read() error {
 
 func (c *Client) Handle(message []byte) {
 	//Taking the command from the received message
-	cmd := bytes.ToUpper(bytes.TrimSpace(bytes.Split(message, []byte(" "))[0]))
+	cmd := bytes.ToUpper(bytes.TrimSpace(message))
 
-	switch string(cmd) {
-	case "RECEIVING":
+	switch string(cmd[:3]) {
+	case "REC":
 		c.receiveFile()
-	case "SENDING":
+	case "SND":
 		c.sendingFile("/home/sabera/notes.txt")
+	case "OKY":
+		fmt.Println("OK")
 	default:
 		fmt.Println(string(cmd))
 	}
@@ -79,10 +82,11 @@ func (c *Client) sendCommand(cmd string) {
 }
 
 // Fuction for listing the channels
-func (c *Client) listChannels() {
-	command := "LCHANNELS \n"
+func (c *Client) listChannels() error {
+	command := "LCH"
 
 	c.sendCommand(command)
+	return nil
 }
 
 // Function for suscribing to a channel

@@ -52,6 +52,8 @@ func main() {
 
 			break
 		}
+
+		fmt.Println(msg)
 	}
 
 	fmt.Println("Registration done.")
@@ -65,7 +67,12 @@ menu:
 
 		switch option {
 		case "1":
-			newClient.listChannels()
+			err := newClient.listChannels()
+			if err != nil {
+				fmt.Println(err.Error(), " Returning to menu.")
+				continue
+			}
+
 		case "2":
 			fmt.Println("Enter the name of the channel you want to join:")
 			channelName, _ := reader.ReadString('\n')
