@@ -36,6 +36,10 @@ func main() {
 			fmt.Println("Enter a valid username")
 			continue
 		}
+		if len(username) > 10 {
+			fmt.Println("A username can not be longer than 10 digits")
+			continue
+		}
 		//Registering the user
 		msg := register(username, Conn)
 		msg = strings.TrimSpace(msg)
@@ -67,7 +71,12 @@ menu:
 			channelName, _ := reader.ReadString('\n')
 			channelName = strings.TrimSpace(channelName)
 
-			newClient.suscribing(channelName)
+			err := newClient.suscribing(channelName)
+			if err != nil {
+				fmt.Println(err.Error(), " Returning to menu.")
+				continue
+			}
+
 		case "3":
 			fmt.Println("Enter the name of the channel you want sent the file to:")
 			channelName, _ := reader.ReadString('\n')

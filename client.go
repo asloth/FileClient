@@ -40,54 +40,23 @@ func (c *Client) Handle(message []byte) {
 	case "RECEIVING":
 		c.receiveFile()
 	case "SENDING":
-		c.sendingFile("notes.txt")
+		c.sendingFile("/home/sabera/notes.txt")
 	default:
 		fmt.Println(string(cmd))
 	}
 }
 
-func (c *Client) receiveFile() {
-	const BUFFERSIZE = 1024
-
-	connection := c.Con
-
-	fmt.Println("Connected to server, start receiving the file name and file size")
-	bufferFileName := make([]byte, 64)
-	bufferFileSize := make([]byte, 10)
-
-	connection.Read(bufferFileSize)
-	fileSize, _ := strconv.ParseInt(strings.Trim(string(bufferFileSize), ":"), 10, 64)
-
-	connection.Read(bufferFileName)
-	fileName := strings.Trim(string(bufferFileName), ":")
-
-	newFile, err := os.Create(fileName)
-
-	if err != nil {
-		panic(err)
-	}
-	defer newFile.Close()
-	var receivedBytes int64
-
-	for {
-		if (fileSize - receivedBytes) < BUFFERSIZE {
-			io.CopyN(newFile, connection, (fileSize - receivedBytes))
-			connection.Read(make([]byte, (receivedBytes+BUFFERSIZE)-fileSize))
-			break
-		}
-		io.CopyN(newFile, connection, BUFFERSIZE)
-		receivedBytes += BUFFERSIZE
-	}
-	fmt.Println("Received file completely!")
-
-}
-
-//Function for registering the user in the server
+// Function for registering the user in the server
 func register(name string, c net.Conn) string {
+	//Completando el nombre hasta los 10 bytes requeridos
+	fullName := fillString(name, 10)
 
-	command := "REGISTER @" + name + "\n"
+	//Defining the command that is gonna be send to the server
+	command := "REG@" + fullName
 
+	//Writing the command in the connection
 	_, err := c.Write([]byte(command))
+
 	if err != nil {
 		return err.Error()
 	}
@@ -101,34 +70,38 @@ func register(name string, c net.Conn) string {
 	return string(msg)
 }
 
-//Function for sending commands to the server and visualizing the response
+// Function for sending commands to the server and visualizing the response
 func (c *Client) sendCommand(cmd string) {
 	_, err := c.Con.Write([]byte(cmd))
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	//Reading the response of the server
-	// msg, err := bufio.NewReader(c.Con).ReadBytes('\n')
-
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// }
-
-	// fmt.Println(string(msg))
-	// return string(msg)
 }
 
-//Fuction for listing the channels
+// Fuction for listing the channels
 func (c *Client) listChannels() {
 	command := "LCHANNELS \n"
 
 	c.sendCommand(command)
 }
 
-//Function for suscribing to a channel
-func (c *Client) suscribing(chann string) {
-	command := "SUSCRIBE #" + chann + " \n"
+// Function for suscribing to a channel
+func (c *Client) suscribing(chann string) error {
+
+	//Validating that the username is not empty
+	if len(chann) == 0 {
+		return fmt.Errorf("enter a valid channel name")
+	}
+	if len(chann) > 10 {
+		return fmt.Errorf("a channel name can not be longer than 10 digits")
+	}
+
+	//Completando el nombre hasta los 10 bytes requeridos
+	channelName := fillString(chann, 10)
+
+	command := "SUS#" + channelName
 	c.sendCommand(command)
+	return nil
 
 }
 
@@ -149,7 +122,7 @@ func (c *Client) sendFile(chnn, path string) {
 
 }
 
-//Function for sending only the file data, this is gonna execute at the end of sendFile  method
+// Function for sending only the file data, this is gonna execute at the end of sendFile  method
 func (c *Client) sendingFile(path string) {
 	const BUFFERSIZE = 1024
 
@@ -191,4 +164,54 @@ func fillString(retunString string, toLength int) string {
 		break
 	}
 	return retunString
+}
+
+func (c *Client) receiveFile() {
+	const BUFFERSIZE = 1024
+
+	connection := c.Con
+
+	fmt.Println("Connected to server, start receiving the file name and file size")
+	bufferFileName := make([]byte, 64)
+	bufferFileSize := make([]byte, 10)
+
+	_, err := connection.Read(bufferFileSize)
+	if err != nil {
+		panic(err)
+	}
+
+	fileSize, _ := strconv.ParseInt(strings.Trim(string(bufferFileSize), ":"), 10, 64)
+	fmt.Println("bufferFileSize ", fileSize)
+
+	_, err = connection.Read(bufferFileName)
+	fmt.Println("flag3")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("flag4" + string(bufferFileName))
+
+	fileName := strings.Trim(string(bufferFileName), ":")
+	fmt.Println("filename " + fileName)
+
+	newFile, err := os.Create(fileName)
+
+	fmt.Println("flag5")
+
+	if err != nil {
+		panic(err)
+	}
+	defer newFile.Close()
+	var receivedBytes int64
+	fmt.Println("Start receiving the file")
+	for {
+		if (fileSize - receivedBytes) < BUFFERSIZE {
+			io.CopyN(newFile, connection, (fileSize - receivedBytes))
+			connection.Read(make([]byte, (receivedBytes+BUFFERSIZE)-fileSize))
+			break
+		}
+		io.CopyN(newFile, connection, BUFFERSIZE)
+		receivedBytes += BUFFERSIZE
+	}
+	fmt.Println("Received file completely!")
+
 }
