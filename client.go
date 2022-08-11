@@ -40,8 +40,6 @@ func (c *Client) Handle(message []byte) {
 	switch string(cmd[:3]) {
 	case "REC":
 		c.receiveFile()
-	case "SND":
-		c.sendingFile("/home/sabera/notes.txt")
 	case "OKY":
 		fmt.Println("OK")
 	default:
@@ -120,10 +118,11 @@ func (c *Client) sendFile(chnn, path string) {
 		return
 	}
 
-	command := "SEND #" + chnn + " \n"
+	command := "SND#" + fillString(chnn, 10)
 
 	c.sendCommand(command)
 
+	c.sendingFile(path)
 }
 
 // Function for sending only the file data, this is gonna execute at the end of sendFile  method
