@@ -37,8 +37,7 @@ func (c *Client) Read() error {
 func (c *Client) Handle(message []byte) {
 	//Taking the command from the received message
 	cmd := bytes.ToUpper(bytes.TrimSpace(message))
-	fmt.Println("cmd string", string(cmd))
-	fmt.Println("just cmd", cmd)
+
 	switch string(cmd) {
 	case "RC":
 		c.receiveFile()
