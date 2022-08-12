@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -196,7 +197,7 @@ func (c *Client) receiveFile() {
 
 	fileName := strings.Trim(string(bufferFileName), ":")
 
-	newFile, err := os.Create(fileName)
+	newFile, err := create("received/" + fileName)
 
 	if err != nil {
 		panic(err)
@@ -211,8 +212,14 @@ func (c *Client) receiveFile() {
 		}
 		io.CopyN(newFile, connection, BUFFERSIZE)
 		receivedBytes += BUFFERSIZE
-		fmt.Println(receivedBytes)
 	}
 	fmt.Println("Received file completely!")
 
+}
+
+func create(p string) (*os.File, error) {
+	if err := os.MkdirAll(filepath.Dir(p), 0770); err != nil {
+		return nil, err
+	}
+	return os.Create(p)
 }
