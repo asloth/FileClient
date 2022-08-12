@@ -18,7 +18,7 @@ type Client struct {
 
 func (c *Client) Read() error {
 	for {
-		msg := make([]byte, 50)
+		msg := make([]byte, 2)
 		_, err := c.Con.Read(msg)
 
 		if err == io.EOF {
@@ -36,14 +36,17 @@ func (c *Client) Read() error {
 func (c *Client) Handle(message []byte) {
 	//Taking the command from the received message
 	cmd := bytes.ToUpper(bytes.TrimSpace(message))
-
-	switch string(cmd[:3]) {
-	case "REC":
+	fmt.Println("cmd string", string(cmd))
+	fmt.Println("just cmd", cmd)
+	switch string(cmd) {
+	case "RC":
 		c.receiveFile()
-	case "OKY":
+	case "OK":
 		fmt.Println("OK")
 	default:
-		fmt.Println(string(cmd))
+		msg := make([]byte, 20)
+		c.Con.Read(msg)
+		fmt.Println(string(cmd), string(msg))
 	}
 }
 
@@ -208,12 +211,14 @@ func (c *Client) receiveFile() {
 	fmt.Println("Start receiving the file")
 	for {
 		if (fileSize - receivedBytes) < BUFFERSIZE {
+			fmt.Println("aqui1")
 			io.CopyN(newFile, connection, (fileSize - receivedBytes))
-			connection.Read(make([]byte, (receivedBytes+BUFFERSIZE)-fileSize))
 			break
 		}
+		fmt.Println("aqui2")
 		io.CopyN(newFile, connection, BUFFERSIZE)
 		receivedBytes += BUFFERSIZE
+		fmt.Println(receivedBytes)
 	}
 	fmt.Println("Received file completely!")
 
