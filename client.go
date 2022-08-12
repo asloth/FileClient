@@ -46,7 +46,7 @@ func (c *Client) Handle(message []byte) {
 	default:
 		msg := make([]byte, 20)
 		c.Con.Read(msg)
-		fmt.Println(string(cmd), string(msg))
+		fmt.Println(string(cmd) + string(msg))
 	}
 }
 
@@ -117,7 +117,7 @@ func (c *Client) sendFile(chnn, path string) {
 
 	// check if error is "file not exists"
 	if os.IsNotExist(error) {
-		fmt.Printf("%v file does not exist. Returning to the menu\n", path)
+		fmt.Printf("%v file does not exist. Returning to the menu", path)
 		return
 	}
 
@@ -187,21 +187,16 @@ func (c *Client) receiveFile() {
 	}
 
 	fileSize, _ := strconv.ParseInt(strings.Trim(string(bufferFileSize), ":"), 10, 64)
-	fmt.Println("bufferFileSize ", fileSize)
 
 	_, err = connection.Read(bufferFileName)
-	fmt.Println("flag3")
+
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("flag4" + string(bufferFileName))
 
 	fileName := strings.Trim(string(bufferFileName), ":")
-	fmt.Println("filename " + fileName)
 
 	newFile, err := os.Create(fileName)
-
-	fmt.Println("flag5")
 
 	if err != nil {
 		panic(err)
@@ -211,11 +206,9 @@ func (c *Client) receiveFile() {
 	fmt.Println("Start receiving the file")
 	for {
 		if (fileSize - receivedBytes) < BUFFERSIZE {
-			fmt.Println("aqui1")
 			io.CopyN(newFile, connection, (fileSize - receivedBytes))
 			break
 		}
-		fmt.Println("aqui2")
 		io.CopyN(newFile, connection, BUFFERSIZE)
 		receivedBytes += BUFFERSIZE
 		fmt.Println(receivedBytes)
