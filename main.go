@@ -57,7 +57,7 @@ func main() {
 	}
 
 	fmt.Println("Registration done.")
-	fmt.Println("Menu: \n 1. Listar canales \n 2. Subscribise a un canal \n 3. Enviar archivo a un canal \n 4. Salir")
+	fmt.Println("Menu: \n 1. Listar canales \n 2. Subscribise a un canal \n 3. Enviar archivo a un canal \n 4. Abandonar un canal \n 5. Salir")
 	go newClient.Read()
 
 menu:
@@ -83,7 +83,6 @@ menu:
 				fmt.Println(err.Error(), " Returning to menu.")
 				continue
 			}
-
 		case "3":
 			fmt.Println("Enter the name of the channel you want sent the file to:")
 			channelName, _ := reader.ReadString('\n')
@@ -94,6 +93,16 @@ menu:
 
 			newClient.sendFile(channelName, filePath)
 		case "4":
+			fmt.Println("Enter the name of the channel you want to left:")
+			channelName, _ := reader.ReadString('\n')
+			channelName = strings.TrimSpace(channelName)
+			err := newClient.unsuscribing(channelName)
+			if err != nil {
+				fmt.Println(err.Error(), " Returning to menu.")
+				continue
+			}
+
+		case "5":
 			fmt.Println("Good bye")
 			newClient.Con.Close()
 			break menu
@@ -102,19 +111,4 @@ menu:
 		}
 	}
 
-}
-
-func getMacAddr() ([]string, error) {
-	ifas, err := net.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-	var as []string
-	for _, ifa := range ifas {
-		a := ifa.HardwareAddr.String()
-		if a != "" {
-			as = append(as, a)
-		}
-	}
-	return as, nil
 }

@@ -110,6 +110,27 @@ func (c *Client) suscribing(chann string) error {
 
 }
 
+// Function for unsuscribing to a channel
+func (c *Client) unsuscribing(chann string) error {
+
+	//Validating that the username is not empty
+	if len(chann) == 0 {
+		return fmt.Errorf("enter a valid channel name")
+	}
+	if len(chann) > 10 {
+		return fmt.Errorf("a channel name can not be longer than 10 digits")
+	}
+
+	//Completando el nombre hasta los 10 bytes requeridos
+	channelName := fillString(chann, 10)
+
+	command := "UNS#" + channelName
+
+	c.sendCommand(command)
+	return nil
+
+}
+
 // function for sending a file to a channel
 func (c *Client) sendFile(chnn, path string) {
 	//checking if the file exists
@@ -117,7 +138,7 @@ func (c *Client) sendFile(chnn, path string) {
 
 	// check if error is "file not exists"
 	if os.IsNotExist(error) {
-		fmt.Printf("%v file does not exist. Returning to the menu", path)
+		fmt.Printf("%v file does not exist. Returning to the menu\n", path)
 		return
 	}
 
@@ -157,7 +178,7 @@ func (c *Client) sendingFile(path string) {
 		}
 		connection.Write(sendBuffer)
 	}
-	fmt.Println("File has been sent")
+
 }
 
 func fillString(retunString string, toLength int) string {
